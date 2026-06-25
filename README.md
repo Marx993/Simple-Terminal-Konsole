@@ -77,3 +77,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Contributing
 
 Feel free to fork, modify, and improve this project!
+.
