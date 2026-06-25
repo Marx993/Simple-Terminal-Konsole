@@ -37,4 +37,3 @@ clean:
 
 # Phony targets
 .PHONY: all install uninstall clean
-.
