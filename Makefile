@@ -3,7 +3,7 @@ CXXFLAGS = -std=c++17 -Wall -Wextra -O2
 LDFLAGS = 
 
 # Source files
-SOURCES = main.cpp
+SOURCES = stk.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 TARGET = konsole
 
