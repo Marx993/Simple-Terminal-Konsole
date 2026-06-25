@@ -5,7 +5,7 @@ LDFLAGS =
 # Source files
 SOURCES = stk.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
-TARGET = konsole
+TARGET = stk
 
 # Directories
 PREFIX = /usr/local
