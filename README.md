@@ -33,18 +33,18 @@ A very simple terminal emulator/console application written in C++.
    ```bash
    sudo make install
    ```
-   This will install the binary to `/usr/local/bin/konsole`
+   This will install the binary to `/usr/local/bin/stk`
 
 ### Usage
 
 After installation, run:
 ```bash
-konsole
+stk
 ```
 
 Or run directly from the build directory:
 ```bash
-./konsole
+./stk
 ```
 
 ## Uninstallation
