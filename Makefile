@@ -1,39 +1,27 @@
+# Compiler settings
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -O2
-LDFLAGS = 
+# Automatically grab compilation flags for VTE 2.91, GTK3, and C++17
+CXXFLAGS = -std=c++17 -Wall -Wextra -O2 $(shell pkg-config --cflags vte-2.91 gtk+-3.0)
+LIBS = $(shell pkg-config --libs vte-2.91 gtk+-3.0)
 
-# Source files
-SOURCES = stk.cpp
-OBJECTS = $(SOURCES:.cpp=.o)
+# Target binary name
 TARGET = stk
 
-# Directories
+# Target installation directory
 PREFIX = /usr/local
-BINDIR = $(PREFIX)/bin
 
-# Default target
 all: $(TARGET)
 
-# Link object files to create executable
-$(TARGET): $(OBJECTS)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+$(TARGET): stk.cpp
+	$(CXX) $(CXXFLAGS) stk.cpp -o $(TARGET) $(LIBS)
 
-# Compile source files to object files
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# Install target
-install: $(TARGET)
-	mkdir -p $(BINDIR)
-	install -m 755 $(TARGET) $(BINDIR)/$(TARGET)
-
-# Uninstall target
-uninstall:
-	rm -f $(BINDIR)/$(TARGET)
-
-# Clean up build artifacts
 clean:
-	rm -f $(OBJECTS) $(TARGET)
+	rm -f $(TARGET)
 
-# Phony targets
-.PHONY: all install uninstall clean
+install: $(TARGET)
+	install -D -m 755 $(TARGET) $(DESTDIR)$(PREFIX)/bin/$(TARGET)
+
+uninstall:
+	rm -f $(DESTDIR)$(PREFIX)/bin/$(TARGET)
+
+.PHONY: all clean install uninstall

@@ -1,4 +1,3 @@
-#include <gtk/gtk.h>
 #include <vte/vte.h>
 
 static void
@@ -35,66 +34,60 @@ on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 int
 main(int argc, char *argv[])
 {
-    GtkWidget *window;
-    VteTerminal *term;
+    GtkWidget *window, *terminal;
 
-    /* Initialize GTK before creating the terminal widget */
+    // Initialize GTK before creating the terminal widget
     gtk_init(&argc, &argv);
 
-    /* Create the window widget */
-    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(window), "STK");
-    gtk_window_set_default_size(GTK_WINDOW(window), 800, 600);
-
-    /* Create the terminal widget after GTK initialization */
-    term = VTE_TERMINAL(vte_terminal_new());
-    if (!term) {
+    // Create the terminal widget after GTK initialization
+    terminal = vte_terminal_new();
+    if (!terminal) {
         g_printerr("Failed to create terminal widget\n");
         return 1;
     }
 
-    /* Connect the key-press-event signal after the terminal is created */
-    g_signal_connect(term, "key-press-event", G_CALLBACK(on_key_press), NULL);
+    // Create the window widget
+    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title(GTK_WINDOW(window), "STK");
 
-    /* Enable mouse autohide feature */
-    vte_terminal_set_mouse_autohide(term, TRUE);
+    // Connect the key-press-event signal after the terminal is created
+    g_signal_connect(terminal, "key-press-event", G_CALLBACK(on_key_press), NULL);
 
-    /* Set up the shell environment and command to run in the terminal */
-    const char *shell = g_getenv("SHELL");
+    // Enable mouse autohide feature
+    vte_terminal_set_mouse_autohide(VTE_TERMINAL(terminal), TRUE);
+
+    // Set up the shell environment and command to run in the terminal
+    gchar **envp = g_get_environ();
+    const char *shell = g_environ_getenv(envp, "SHELL");
     if (!shell) shell = "/bin/sh";
+    gchar *command[] = { g_strdup(shell), NULL };
+    g_strfreev(envp);
 
-    gchar *child_argv[2];
-    child_argv[0] = g_strdup(shell);
-    child_argv[1] = NULL;
-
-    /* Spawn the shell inside the terminal */
-    vte_terminal_spawn_async(term,
+    // Spawn the shell inside the terminal
+    vte_terminal_spawn_async(VTE_TERMINAL(terminal),
         VTE_PTY_DEFAULT,
         NULL,
-        (char **)child_argv,
+        command,
         NULL,
-        G_SPAWN_DEFAULT,
+        (GSpawnFlags)0,
         NULL, NULL,
         NULL,
         -1,
         NULL,
-        (GAsyncReadyCallback)child_ready,
+        child_ready,
         NULL);
 
-    /* free duplicated argv first element (child was spawned already) */
-    g_free(child_argv[0]);
+    // Set up GTK signal to close the window and quit the GTK main loop
+    g_signal_connect(window, "delete-event", gtk_main_quit, NULL);
+    g_signal_connect(terminal, "child-exited", gtk_main_quit, NULL);
 
-    /* Set up GTK signal to close the window and quit the GTK main loop */
-    g_signal_connect(window, "delete-event", G_CALLBACK(gtk_main_quit), NULL);
-    g_signal_connect(term, "child-exited", G_CALLBACK(gtk_main_quit), NULL);
+    // Add the terminal widget to the window
+    gtk_container_add(GTK_CONTAINER(window), terminal);
 
-    /* Add the terminal widget to the window */
-    gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(term));
-
-    /* Display the window and all its contents */
+    // Display the window and all its contents
     gtk_widget_show_all(window);
 
-    /* Start the GTK main loop */
+    // Start the GTK main loop
     gtk_main();
 
     return 0;
